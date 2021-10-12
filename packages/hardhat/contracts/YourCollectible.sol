@@ -19,6 +19,7 @@ contract YourCollectible is ERC721, Ownable {
   using HexStrings for uint160;
   using ToColor for bytes3;
   using Counters for Counters.Counter;
+  
   Counters.Counter private _tokenIds;
 
   constructor() public ERC721("Loogies", "LOOG") {
@@ -28,21 +29,29 @@ contract YourCollectible is ERC721, Ownable {
   mapping (uint256 => bytes3) public color;
   mapping (uint256 => uint256) public chubbiness;
 
-  uint256 mintDeadline = block.timestamp + 24 hours;
+
+  address creator1 = 0x0000000000000000000000000000000000000000;
+  address creator2 = 0x0000000000000000000000000000000000000000;
+  string creator1Bday = "April 15";
+  string creator2Bday = "May 15";
+  uint256 maxDays = 366;
+  uint256 PRICE = 7 * 10**16;
+
+
+
 
   function mintItem()
       public
       returns (uint256)
   {
-      require( block.timestamp < mintDeadline, "DONE MINTING");
+      //require( block.timestamp < mintDeadline, "DONE MINTING");
       _tokenIds.increment();
 
       uint256 id = _tokenIds.current();
       _mint(msg.sender, id);
 
       bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this) ));
-      color[id] = bytes2(predictableRandom[0]) | ( bytes2(predictableRandom[1]) >> 8 ) | ( bytes3(predictableRandom[2]) >> 16 );
-      chubbiness[id] = 35+((55*uint256(uint8(predictableRandom[3])))/255);
+     // chubbiness[id] = 35+((55*uint256(uint8(predictableRandom[3])))/255);
 
       return id;
   }
@@ -50,7 +59,7 @@ contract YourCollectible is ERC721, Ownable {
   function tokenURI(uint256 id) public view override returns (string memory) {
       require(_exists(id), "not exist");
       string memory name = string(abi.encodePacked('Loogie #',id.toString()));
-      string memory description = string(abi.encodePacked('This Loogie is the color #',color[id].toColor(),' with a chubbiness of ',uint2str(chubbiness[id]),'!!!'));
+      string memory description = string(abi.encodePacked(''));
       string memory image = Base64.encode(bytes(generateSVGofTokenById(id)));
 
       return
@@ -99,9 +108,11 @@ contract YourCollectible is ERC721, Ownable {
     string memory render = string(abi.encodePacked(
       
 
-      '<svg height="30" width="200">',
-      '<text x="0" y="15" fill="red">I love SVG!</text>',
-      '</svg>'
+       '<svg width="400" height="400">',
+  '<rect width="400" height="400" style="=fill:black" />',
+  '<text x="150" y="220" font-size="6em" >🎂</text>',
+  '<text x="40" y="360" font-size="2em" font-family="Helvetica" fill="white"> ',creator1Bday, '</text>',
+  '</svg>'
 
       ));
 
