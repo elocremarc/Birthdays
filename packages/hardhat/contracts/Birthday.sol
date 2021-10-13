@@ -30,6 +30,7 @@ contract Birthday is ERC721, Ownable {
 
   mapping (uint256 => bytes3) public color;
   mapping (uint256 => uint256) public chubbiness;
+  mapping (uint256 => bool) public claimedBirthday;
 
 
   address creator1 = 0x0000000000000000000000000000000000000000;
@@ -51,12 +52,15 @@ struct Birthday {
 @param _day uint256
 
  */
-  function mintItem( uint256 _month, uint256 _day)
+  function mintItem( uint256 _birthday )
       public
       returns (uint256)
   {
       require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
+      require(!claimedBirthday[_birthday], "Birthday already claimed :)");
+      
       claimed[msg.sender] = true;
+      claimedBirthday[_birthday] = true;
 
       //require( block.timestamp < mintDeadline, "DONE MINTING");
       _tokenIds.increment();
