@@ -4,23 +4,19 @@ const { solidity } = require("ethereum-waffle");
 
 use(solidity);
 
-describe("My Dapp", function () {
-  let myContract;
+beforeEach(async function () {
+  [owner, alice, bob] = await ethers.getSigners();
+});
 
-  describe("YourContract", function () {
-    it("Should deploy YourContract", async function () {
-      const YourContract = await ethers.getContractFactory("YourContract");
+describe("Perpetual Birthday Party!", function () {
+  describe("Birthday Contract", function () {
+    it("Should deploy contract", async function () {
+      const Birthday = await ethers.getContractFactory("Birthday");
 
-      myContract = await YourContract.deploy();
+      birthday = await Birthday.deploy();
     });
-
-    describe("setPurpose()", function () {
-      it("Should be able to set a new purpose", async function () {
-        const newPurpose = "Test Purpose";
-
-        await myContract.setPurpose(newPurpose);
-        expect(await myContract.purpose()).to.equal(newPurpose);
-      });
+    it("Should have proper owner", async function () {
+      expect(await birthday.owner()).to.equal(owner.address);
     });
   });
 });

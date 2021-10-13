@@ -13,7 +13,7 @@ import './ToColor.sol';
 
 // GET LISTED ON OPENSEA: https://testnets.opensea.io/get-listed/step-two
 
-contract YourCollectible is ERC721, Ownable {
+contract Birthday is ERC721, Ownable {
 
   using Strings for uint256;
   using HexStrings for uint160;
@@ -22,8 +22,10 @@ contract YourCollectible is ERC721, Ownable {
   
   Counters.Counter private _tokenIds;
 
-  constructor() public ERC721("Loogies", "LOOG") {
-    // RELEASE THE LOOGIES!
+  constructor(
+
+  ) public ERC721("Birthday", "BDAY") {
+    // Happy Birthday!
   }
 
   mapping (uint256 => bytes3) public color;
@@ -36,17 +38,28 @@ contract YourCollectible is ERC721, Ownable {
   string creator2Bday = "May 15";
   uint256 maxDays = 366;
   uint256 PRICE = 7 * 10**16;
+  mapping (address => bool) public  claimed;
 
+struct Birthday {
+  uint256 month;
+  uint256 day;
+}
 
+/** 
+@dev Mint Birthday
+@param _month uint256
+@param _day uint256
 
-
-  function mintItem()
+ */
+  function mintItem( uint256 _month, uint256 _day)
       public
       returns (uint256)
   {
+      require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
+      claimed[msg.sender] = true;
+
       //require( block.timestamp < mintDeadline, "DONE MINTING");
       _tokenIds.increment();
-
       uint256 id = _tokenIds.current();
       _mint(msg.sender, id);
 
@@ -108,13 +121,11 @@ contract YourCollectible is ERC721, Ownable {
     string memory render = string(abi.encodePacked(
       
 
-       '<svg width="400" height="400">',
+  '<svg width="400" height="400">',
   '<rect width="400" height="400" style="=fill:black" />',
   '<text x="150" y="220" font-size="6em" >🎂</text>',
   '<text x="40" y="360" font-size="2em" font-family="Helvetica" fill="white"> ',creator1Bday, '</text>',
-  '</svg>'
-
-      ));
+  '</svg>'));
 
     return render;
   }
