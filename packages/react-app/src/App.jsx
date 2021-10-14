@@ -27,8 +27,7 @@ import {
   useOnBlock,
   useUserProvider,
 } from "./hooks";
-import { BlockPicker } from 'react-color'
-
+import { BlockPicker } from "react-color";
 
 const { BufferList } = require("bl");
 // https://www.npmjs.com/package/ipfs-http-client
@@ -119,13 +118,13 @@ function App(props) {
   const mainnetProvider = scaffoldEthProvider && scaffoldEthProvider._network ? scaffoldEthProvider : mainnetInfura;
 
   const logoutOfWeb3Modal = async () => {
-     await web3Modal.clearCachedProvider();
-     if (injectedProvider && injectedProvider.provider && typeof injectedProvider.provider.disconnect == "function") {
-       await injectedProvider.provider.disconnect();
-     }
-     setTimeout(() => {
-       window.location.reload();
-     }, 1);
+    await web3Modal.clearCachedProvider();
+    if (injectedProvider && injectedProvider.provider && typeof injectedProvider.provider.disconnect == "function") {
+      await injectedProvider.provider.disconnect();
+    }
+    setTimeout(() => {
+      window.location.reload();
+    }, 1);
   };
 
   const [injectedProvider, setInjectedProvider] = useState();
@@ -201,9 +200,9 @@ function App(props) {
           const tokenId = await readContracts.YourCollectible.tokenOfOwnerByIndex(address, tokenIndex);
           console.log("tokenId", tokenId);
           const tokenURI = await readContracts.YourCollectible.tokenURI(tokenId);
-          const jsonManifestString = atob(tokenURI.substring(29))
+          const jsonManifestString = atob(tokenURI.substring(29));
           console.log("jsonManifestString", jsonManifestString);
-/*
+          /*
           const ipfsHash = tokenURI.replace("https://ipfs.io/ipfs/", "");
           console.log("ipfsHash", ipfsHash);
 
@@ -217,7 +216,6 @@ function App(props) {
           } catch (e) {
             console.log(e);
           }
-
         } catch (e) {
           console.log(e);
         }
@@ -256,15 +254,7 @@ function App(props) {
       console.log("📝 readContracts", readContracts);
       console.log("🔐 writeContracts", writeContracts);
     }
-  }, [
-    mainnetProvider,
-    address,
-    selectedChainId,
-    yourLocalBalance,
-    yourMainnetBalance,
-    readContracts,
-    writeContracts,
-  ]);
+  }, [mainnetProvider, address, selectedChainId, yourLocalBalance, yourMainnetBalance, readContracts, writeContracts]);
 
   let networkDisplay = "";
   if (localChainId && selectedChainId && localChainId !== selectedChainId) {
@@ -430,14 +420,20 @@ function App(props) {
             */}
 
             <div style={{ maxWidth: 820, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
-              {isSigner?(
-                <Button type={"primary"} onClick={()=>{
-                  tx( writeContracts.YourCollectible.mintItem() )
-                }}>MINT</Button>
-              ):(
-                <Button type={"primary"} onClick={loadWeb3Modal}>CONNECT WALLET</Button>
+              {isSigner ? (
+                <Button
+                  type={"primary"}
+                  onClick={() => {
+                    tx(writeContracts.Birthday.mintItem());
+                  }}
+                >
+                  MINT
+                </Button>
+              ) : (
+                <Button type={"primary"} onClick={loadWeb3Modal}>
+                  CONNECT WALLET
+                </Button>
               )}
-
             </div>
 
             <div style={{ width: 820, margin: "auto", paddingBottom: 256 }}>
@@ -447,7 +443,7 @@ function App(props) {
                 renderItem={item => {
                   const id = item.id.toNumber();
 
-                  console.log("IMAGE",item.image)
+                  console.log("IMAGE", item.image);
 
                   return (
                     <List.Item key={id + "_" + item.uri + "_" + item.owner}>
@@ -458,8 +454,16 @@ function App(props) {
                           </div>
                         }
                       >
-                        <a href={"https://opensea.io/assets/"+(readContracts && readContracts.YourCollectible && readContracts.YourCollectible.address)+"/"+item.id} target="_blank">
-                        <img src={item.image} />
+                        <a
+                          href={
+                            "https://opensea.io/assets/" +
+                            (readContracts && readContracts.YourCollectible && readContracts.YourCollectible.address) +
+                            "/" +
+                            item.id
+                          }
+                          target="_blank"
+                        >
+                          <img src={item.image} />
                         </a>
                         <div>{item.description}</div>
                       </Card>
@@ -497,21 +501,26 @@ function App(props) {
               />
             </div>
             <div style={{ maxWidth: 820, margin: "auto", marginTop: 32, paddingBottom: 256 }}>
-
-              🛠 built with <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank">🏗 scaffold-eth</a>
-
-              🍴 <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank">Fork this repo</a> and build a cool SVG NFT!
-
+              🛠 built with{" "}
+              <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank">
+                🏗 scaffold-eth
+              </a>
+              🍴{" "}
+              <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank">
+                Fork this repo
+              </a>{" "}
+              and build a cool SVG NFT!
             </div>
           </Route>
           <Route path="/debug">
-
-            <div style={{padding:32}}>
-              <Address value={readContracts && readContracts.YourCollectible && readContracts.YourCollectible.address} />
+            <div style={{ padding: 32 }}>
+              <Address
+                value={readContracts && readContracts.YourCollectible && readContracts.YourCollectible.address}
+              />
             </div>
 
             <Contract
-              name="YourCollectible"
+              name="Birthday"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}

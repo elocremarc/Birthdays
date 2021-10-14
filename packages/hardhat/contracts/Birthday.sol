@@ -132,7 +132,7 @@ contract Birthday is ERC721, Ownable {
 @dev Converts day number to Bday
 @param _day uint256
 */
-function getBday(uint256 _day) public returns (string memory bday) {
+function getBday(uint256 _day) internal returns (string memory bday) {
     if (_day <1 || _day > maxDays) {
       revert("Invalid day");
     }
