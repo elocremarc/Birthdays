@@ -178,11 +178,11 @@ function App(props) {
   ]);*/
 
   // keep track of a variable from the contract in the local React state:
-  const balance = useContractReader(readContracts, "YourCollectible", "balanceOf", [address]);
+  const balance = useContractReader(readContracts, "Birthday", "balanceOf", [address]);
   console.log("🤗 balance:", balance);
 
   // 📟 Listen for broadcast events
-  const transferEvents = useEventListener(readContracts, "YourCollectible", "Transfer", localProvider, 1);
+  const transferEvents = useEventListener(readContracts, "Birthday", "Transfer", localProvider, 1);
   console.log("📟 Transfer events:", transferEvents);
 
   //
@@ -197,9 +197,9 @@ function App(props) {
       for (let tokenIndex = 0; tokenIndex < balance; tokenIndex++) {
         try {
           console.log("GEtting token index", tokenIndex);
-          const tokenId = await readContracts.YourCollectible.tokenOfOwnerByIndex(address, tokenIndex);
+          const tokenId = await readContracts.Birthday.tokenOfOwnerByIndex(address, tokenIndex);
           console.log("tokenId", tokenId);
-          const tokenURI = await readContracts.YourCollectible.tokenURI(tokenId);
+          const tokenURI = await readContracts.Birthday.tokenURI(tokenId);
           const jsonManifestString = atob(tokenURI.substring(29));
           console.log("jsonManifestString", jsonManifestString);
           /*
@@ -424,7 +424,7 @@ function App(props) {
                 <Button
                   type={"primary"}
                   onClick={() => {
-                    tx(writeContracts.Birthday.mintItem());
+                    tx(writeContracts.Birthday.mintItem(12));
                   }}
                 >
                   MINT
@@ -457,7 +457,7 @@ function App(props) {
                         <a
                           href={
                             "https://opensea.io/assets/" +
-                            (readContracts && readContracts.YourCollectible && readContracts.YourCollectible.address) +
+                            (readContracts && readContracts.Birthday && readContracts.Birthday.address) +
                             "/" +
                             item.id
                           }
@@ -489,7 +489,7 @@ function App(props) {
                         <Button
                           onClick={() => {
                             console.log("writeContracts", writeContracts);
-                            tx(writeContracts.YourCollectible.transferFrom(address, transferToAddresses[id], id));
+                            tx(writeContracts.Birthday.transferFrom(address, transferToAddresses[id], id));
                           }}
                         >
                           Transfer
