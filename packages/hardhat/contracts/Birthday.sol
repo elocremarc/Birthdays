@@ -50,10 +50,11 @@ contract Birthday is ERC721, Ownable {
       public payable
       returns (uint256)
   {
-      require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
+      //require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
+      //claimed[msg.sender] = true;
+
       require(!claimedBirthday[_birthday], "Birthday already claimed :)");
       
-      claimed[msg.sender] = true;
       claimedBirthday[_birthday] = true;
       bday[_birthday] = getBday(_birthday);
 
