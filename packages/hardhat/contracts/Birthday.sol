@@ -28,9 +28,9 @@ contract Birthday is ERC721, Ownable {
     // Happy Birthday!
   }
 
-  mapping (uint256 => bytes3) public color;
-  mapping (uint256 => uint256) public chubbiness;
+  mapping (uint256 => string) public bday;
   mapping (uint256 => bool) public claimedBirthday;
+  mapping (address => bool) public  claimed;
 
 
   address creator1 = 0x0000000000000000000000000000000000000000;
@@ -39,21 +39,15 @@ contract Birthday is ERC721, Ownable {
   string creator2Bday = "May 15";
   uint256 maxDays = 366;
   uint256 PRICE = 7 * 10**16;
-  mapping (address => bool) public  claimed;
 
-struct Birthday {
-  uint256 month;
-  uint256 day;
-}
 
 /** 
 @dev Mint Birthday
-@param _month uint256
-@param _day uint256
+
 
  */
   function mintItem( uint256 _birthday )
-      public
+      public payable
       returns (uint256)
   {
       require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
@@ -61,16 +55,17 @@ struct Birthday {
       
       claimed[msg.sender] = true;
       claimedBirthday[_birthday] = true;
+      bday[_birthday] = getBday(_birthday);
 
       //require( block.timestamp < mintDeadline, "DONE MINTING");
-      _tokenIds.increment();
-      uint256 id = _tokenIds.current();
-      _mint(msg.sender, id);
+      //_tokenIds.increment();
+      //uint256 id = _tokenIds.current();
+      _mint(msg.sender, _birthday);
 
-      bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this) ));
+     // bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this) ));
      // chubbiness[id] = 35+((55*uint256(uint8(predictableRandom[3])))/255);
 
-      return id;
+      return _birthday;
   }
 
   function tokenURI(uint256 id) public view override returns (string memory) {
@@ -93,9 +88,9 @@ struct Birthday {
                               '", "external_url":"https://burnyboys.com/token/',
                               id.toString(),
                               '", "attributes": [{"trait_type": "color", "value": "#',
-                              color[id].toColor(),
+                              //color[id].toColor(),
                               '"},{"trait_type": "chubbiness", "value": ',
-                              uint2str(chubbiness[id]),
+                              //uint2str(chubbiness[id]),
                               '}], "owner":"',
                               (uint160(ownerOf(id))).toHexString(20),
                               '", "image": "',
@@ -128,10 +123,55 @@ struct Birthday {
   '<svg width="400" height="400">',
   '<rect width="400" height="400" style="=fill:black" />',
   '<text x="150" y="220" font-size="6em" >🎂</text>',
-  '<text x="40" y="360" font-size="2em" font-family="Helvetica" fill="white"> ',creator1Bday, '</text>',
+  '<text x="40" y="360" font-size="2em" font-family="Helvetica" fill="white"> ',bday[id], '</text>',
   '</svg>'));
 
     return render;
+  }
+/**  
+@dev Converts day number to Bday
+@param _day uint256
+*/
+function getBday(uint256 _day) public returns (string memory bday) {
+    if (_day <1 || _day > maxDays) {
+      revert("Invalid day");
+    }
+    if (_day <= 31 && _day > 1) {
+        return (string(abi.encodePacked("January", " ", uint2str(_day))));
+    }
+    if (_day <= 60 && _day > 32) {
+        return (string(abi.encodePacked("February", " ", uint2str(_day - 31))));
+    }
+    if (_day <= 91 && _day > 60) {
+        return (string(abi.encodePacked("March" , " " , uint2str (_day - 59))));
+    }
+    if (_day <= 121 && _day > 91) {
+        return (string(abi.encodePacked("April" , " " , uint2str(_day - 90))));
+    }
+    if (_day <= 152 && _day > 121) {
+        return (string(abi.encodePacked("May" , " " , uint2str(_day - 120))));
+    }
+    if  (_day <= 182 && _day > 152) {
+        return (string(abi.encodePacked("June" , " " , uint2str(_day - 151))));
+    }
+    if (_day <= 213 && _day > 182) {
+        return (string(abi.encodePacked("July" , " " , uint2str(_day - 181))));
+    }
+    if (_day <= 244 && _day > 213) {
+        return (string(abi.encodePacked("August" , " " , uint2str(_day - 212))));
+    }
+    if (_day <= 274 && _day > 244) {
+        return (string(abi.encodePacked("September" , " " , uint2str( _day - 243))));
+    }
+    if (_day <= 305 && _day > 274) {
+        return (string(abi.encodePacked("October" , " " , uint2str( _day - 273))));
+    }
+    if (_day <= 335 && _day > 305) {
+        return (string(abi.encodePacked("November" , " " , uint2str( _day - 304))));
+    }
+    if (_day <= 366 && _day > 335) {
+        return (string(abi.encodePacked("December" , " " , uint2str( _day - 334))));
+    }
   }
 
   function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
