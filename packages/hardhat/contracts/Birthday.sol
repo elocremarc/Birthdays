@@ -19,19 +19,18 @@ contract Birthday is ERC721, Ownable {
   using HexStrings for uint160;
   using ToColor for bytes3;
   using Counters for Counters.Counter;
-  
   Counters.Counter private _tokenIds;
 
-  constructor(
+  constructor() public ERC721("Birthday", "BDAY") {
+// Happy Birthday!  
+}
 
-  ) public ERC721("Birthday", "BDAY") {
-    // Happy Birthday!
-  }
+  mapping (uint256 => bytes3) public color;
+  mapping (uint256 => uint256) public chubbiness;
 
   mapping (uint256 => string) public bday;
   mapping (uint256 => bool) public claimedBirthday;
   mapping (address => bool) public  claimed;
-
 
   address creator1 = 0x0000000000000000000000000000000000000000;
   address creator2 = 0x0000000000000000000000000000000000000000;
@@ -40,39 +39,32 @@ contract Birthday is ERC721, Ownable {
   uint256 maxDays = 366;
   uint256 PRICE = 7 * 10**16;
 
+  uint256 mintDeadline = block.timestamp + 24 hours;
 
-/** 
-@dev Mint Birthday
-
-
- */
-  function mintItem( uint256 _birthday )
-      public payable
+  function mintItem(uint256 _birthday)
+      public
       returns (uint256)
   {
-      //require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
-      //claimed[msg.sender] = true;
-
-      require(!claimedBirthday[_birthday], "Birthday already claimed :)");
-      
+      claimed[msg.sender] = true;
       claimedBirthday[_birthday] = true;
       bday[_birthday] = getBday(_birthday);
+     // require( block.timestamp < mintDeadline, "DONE MINTING");
+     // _tokenIds.increment();
 
-      //require( block.timestamp < mintDeadline, "DONE MINTING");
-      //_tokenIds.increment();
       //uint256 id = _tokenIds.current();
-      _mint(msg.sender, _birthday);
+      _mint(msg.sender,  _birthday);
 
-     // bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this) ));
-     // chubbiness[id] = 35+((55*uint256(uint8(predictableRandom[3])))/255);
+      bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this) ));
+      color[_birthday] = bytes2(predictableRandom[0]) | ( bytes2(predictableRandom[1]) >> 8 ) | ( bytes3(predictableRandom[2]) >> 16 );
+      chubbiness[_birthday] = 35+((55*uint256(uint8(predictableRandom[3])))/255);
 
       return _birthday;
   }
 
   function tokenURI(uint256 id) public view override returns (string memory) {
       require(_exists(id), "not exist");
-      string memory name = string(abi.encodePacked('Loogie #',id.toString()));
-      string memory description = string(abi.encodePacked(''));
+      string memory name = string(abi.encodePacked(bday[id]));
+      string memory description = string(abi.encodePacked('This Loogie is the color #',color[id].toColor(),' with a chubbiness of ',uint2str(chubbiness[id]),'!!!'));
       string memory image = Base64.encode(bytes(generateSVGofTokenById(id)));
 
       return
@@ -89,9 +81,9 @@ contract Birthday is ERC721, Ownable {
                               '", "external_url":"https://burnyboys.com/token/',
                               id.toString(),
                               '", "attributes": [{"trait_type": "color", "value": "#',
-                              //color[id].toColor(),
+                              color[id].toColor(),
                               '"},{"trait_type": "chubbiness", "value": ',
-                              //uint2str(chubbiness[id]),
+                              uint2str(chubbiness[id]),
                               '}], "owner":"',
                               (uint160(ownerOf(id))).toHexString(20),
                               '", "image": "',
@@ -119,8 +111,7 @@ contract Birthday is ERC721, Ownable {
   // Visibility is `public` to enable it being called by other contracts for composition.
   function renderTokenById(uint256 id) public view returns (string memory) {
     string memory render = string(abi.encodePacked(
-      
-
+    
   '<svg width="400" height="400">',
   '<rect width="400" height="400" style="=fill:black" />',
   '<text x="150" y="220" font-size="6em" >🎂</text>',
@@ -129,11 +120,12 @@ contract Birthday is ERC721, Ownable {
 
     return render;
   }
-/**  
+
+  /**  
 @dev Converts day number to Bday
 @param _day uint256
 */
-function getBday(uint256 _day) internal returns (string memory bday) {
+function getBday(uint256 _day) public returns (string memory bday) {
     if (_day <1 || _day > maxDays) {
       revert("Invalid day");
     }
@@ -144,34 +136,34 @@ function getBday(uint256 _day) internal returns (string memory bday) {
         return (string(abi.encodePacked("February", " ", uint2str(_day - 31))));
     }
     else if (_day <= 91 && _day > 60) {
-        return (string(abi.encodePacked("March" , " " , uint2str (_day - 59))));
+        return (string(abi.encodePacked("March" , " " , uint2str (_day - 60))));
     }
     else if (_day <= 121 && _day > 91) {
-        return (string(abi.encodePacked("April" , " " , uint2str(_day - 90))));
+        return (string(abi.encodePacked("April" , " " , uint2str(_day - 91))));
     }
     else if (_day <= 152 && _day > 121) {
-        return (string(abi.encodePacked("May" , " " , uint2str(_day - 120))));
+        return (string(abi.encodePacked("May" , " " , uint2str(_day - 121))));
     }
     else if  (_day <= 182 && _day > 152) {
-        return (string(abi.encodePacked("June" , " " , uint2str(_day - 151))));
+        return (string(abi.encodePacked("June" , " " , uint2str(_day - 152))));
     }
     else if (_day <= 213 && _day > 182) {
-        return (string(abi.encodePacked("July" , " " , uint2str(_day - 181))));
+        return (string(abi.encodePacked("July" , " " , uint2str(_day - 182))));
     }
     else if (_day <= 244 && _day > 213) {
-        return (string(abi.encodePacked("August" , " " , uint2str(_day - 212))));
+        return (string(abi.encodePacked("August" , " " , uint2str(_day - 213))));
     }
     else if (_day <= 274 && _day > 244) {
-        return (string(abi.encodePacked("September" , " " , uint2str( _day - 243))));
+        return (string(abi.encodePacked("September" , " " , uint2str( _day - 244))));
     }
     else if (_day <= 305 && _day > 274) {
-        return (string(abi.encodePacked("October" , " " , uint2str( _day - 273))));
+        return (string(abi.encodePacked("October" , " " , uint2str( _day - 274))));
     }
     else if (_day <= 335 && _day > 305) {
-        return (string(abi.encodePacked("November" , " " , uint2str( _day - 304))));
+        return (string(abi.encodePacked("November" , " " , uint2str( _day - 305))));
     }
     else if (_day <= 366 && _day > 335) {
-        return (string(abi.encodePacked("December" , " " , uint2str( _day - 334))));
+        return (string(abi.encodePacked("December" , " " , uint2str( _day - 335))));
     }
   }
 

@@ -358,6 +358,8 @@ function App(props) {
   const [transferToAddresses, setTransferToAddresses] = useState({});
 
   const [loadedAssets, setLoadedAssets] = useState();
+  const [newBirthday, setNewBirthday] = useState("loading...");
+
   /*useEffect(() => {
     const updateYourCollectibles = async () => {
       const assetUpdate = [];
@@ -421,14 +423,21 @@ function App(props) {
 
             <div style={{ maxWidth: 820, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
               {isSigner ? (
-                <Button
-                  type={"primary"}
-                  onClick={() => {
-                    tx(writeContracts.Birthday.mintItem(12));
-                  }}
-                >
-                  MINT
-                </Button>
+                <>
+                  <Input
+                    onChange={e => {
+                      setNewBirthday(e.target.value);
+                    }}
+                  />
+                  <Button
+                    type={"primary"}
+                    onClick={() => {
+                      tx(writeContracts.Birthday.mintItem(newBirthday));
+                    }}
+                  >
+                    MINT
+                  </Button>
+                </>
               ) : (
                 <Button type={"primary"} onClick={loadWeb3Modal}>
                   CONNECT WALLET
