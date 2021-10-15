@@ -137,40 +137,40 @@ function getBday(uint256 _day) internal returns (string memory bday) {
     if (_day <1 || _day > maxDays) {
       revert("Invalid day");
     }
-    if (_day <= 31 && _day > 1) {
+    else if (_day <= 31 && _day > 1) {
         return (string(abi.encodePacked("January", " ", uint2str(_day))));
     }
-    if (_day <= 60 && _day > 32) {
+    else if (_day <= 60 && _day > 32) {
         return (string(abi.encodePacked("February", " ", uint2str(_day - 31))));
     }
-    if (_day <= 91 && _day > 60) {
+    else if (_day <= 91 && _day > 60) {
         return (string(abi.encodePacked("March" , " " , uint2str (_day - 59))));
     }
-    if (_day <= 121 && _day > 91) {
+    else if (_day <= 121 && _day > 91) {
         return (string(abi.encodePacked("April" , " " , uint2str(_day - 90))));
     }
-    if (_day <= 152 && _day > 121) {
+    else if (_day <= 152 && _day > 121) {
         return (string(abi.encodePacked("May" , " " , uint2str(_day - 120))));
     }
-    if  (_day <= 182 && _day > 152) {
+    else if  (_day <= 182 && _day > 152) {
         return (string(abi.encodePacked("June" , " " , uint2str(_day - 151))));
     }
-    if (_day <= 213 && _day > 182) {
+    else if (_day <= 213 && _day > 182) {
         return (string(abi.encodePacked("July" , " " , uint2str(_day - 181))));
     }
-    if (_day <= 244 && _day > 213) {
+    else if (_day <= 244 && _day > 213) {
         return (string(abi.encodePacked("August" , " " , uint2str(_day - 212))));
     }
-    if (_day <= 274 && _day > 244) {
+    else if (_day <= 274 && _day > 244) {
         return (string(abi.encodePacked("September" , " " , uint2str( _day - 243))));
     }
-    if (_day <= 305 && _day > 274) {
+    else if (_day <= 305 && _day > 274) {
         return (string(abi.encodePacked("October" , " " , uint2str( _day - 273))));
     }
-    if (_day <= 335 && _day > 305) {
+    else if (_day <= 335 && _day > 305) {
         return (string(abi.encodePacked("November" , " " , uint2str( _day - 304))));
     }
-    if (_day <= 366 && _day > 335) {
+    else if (_day <= 366 && _day > 335) {
         return (string(abi.encodePacked("December" , " " , uint2str( _day - 334))));
     }
   }
