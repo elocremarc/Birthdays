@@ -53,6 +53,7 @@ contract Birthday is ERC721, Ownable {
   {
       claimed[msg.sender] = true;
       claimedBirthday[_birthday] = true;
+      setBday(_birthday);
       //bday[_birthday] = getBday(_birthday);
      // require( block.timestamp < mintDeadline, "DONE MINTING");
      // _tokenIds.increment();
@@ -136,11 +137,9 @@ contract Birthday is ERC721, Ownable {
 function mapBday(uint256 _birthday, string memory _month, string memory _day) private {
     string memory month = string(abi.encodePacked(_month));
     string memory day = string(abi.encodePacked(_day));
-
-       bday[_birthday] = Birthday({
-            month: "testmonth",
-            day: "testday"
-        });
+    Birthday storage birthday = bday[_birthday];
+        birthday.month = _month;
+        birthday.day = _day;
   
 }
 
@@ -148,7 +147,7 @@ function mapBday(uint256 _birthday, string memory _month, string memory _day) pr
 @dev Converts day number to Bday
 @param _day uint256
 */
-function setBday(uint256 _day) public  {
+function setBday(uint256 _day) internal  {
     if (_day <1 || _day > maxDays) {
       revert("Invalid day");
     }
