@@ -2,13 +2,11 @@ pragma solidity >=0.6.0 <0.7.0;
 //SPDX-License-Identifier: MIT
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import 'base64-sol/base64.sol';
 
 import './HexStrings.sol';
-import './ToColor.sol';
 //learn more: https://docs.openzeppelin.com/contracts/3.x/erc721
 
 // GET LISTED ON OPENSEA: https://testnets.opensea.io/get-listed/step-two
@@ -17,62 +15,47 @@ contract Birthday is ERC721, Ownable {
 
   using Strings for uint256;
   using HexStrings for uint160;
-  using ToColor for bytes3;
-  using Counters for Counters.Counter;
-  Counters.Counter private _tokenIds;
+  
+  constructor()
 
-    struct Birthday {
-        string month;
-        string day;
-    }
-
-
-  constructor() public ERC721("Birthday", "BDAY") {
+   public ERC721("Birthday", "BDAY") {
 // Happy Birthday!  
 }
-
-  mapping (uint256 => bytes3) public color;
-  mapping (uint256 => uint256) public chubbiness;
-
+  struct Birthday {
+        string month;
+        string day;
+        string ordinal;
+  }
   mapping (uint256 => Birthday) public bday;
   mapping (uint256 => bool) public claimedBirthday;
   mapping (address => bool) public  claimed;
-
-  address creator1 = 0x0000000000000000000000000000000000000000;
-  address creator2 = 0x0000000000000000000000000000000000000000;
-  string creator1Bday = "April 15";
-  string creator2Bday = "May 15";
+  
   uint256 maxDays = 366;
   uint256 PRICE = 7 * 10**16;
 
-  //uint256 mintDeadline = block.timestamp + 24 hours;
-
   function mintItem(uint256 _birthday)
-      public
+      public payable
       returns (uint256)
   {
+      
+      require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
+      require(msg.value >= PRICE, "Too low price");
       claimed[msg.sender] = true;
+      require(!claimedBirthday[_birthday], "Birthday already claimed :)");
       claimedBirthday[_birthday] = true;
       setBday(_birthday);
-      //bday[_birthday] = getBday(_birthday);
-     // require( block.timestamp < mintDeadline, "DONE MINTING");
-     // _tokenIds.increment();
-
-      //uint256 id = _tokenIds.current();
       _mint(msg.sender,  _birthday);
-
-       bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this) ));
-      color[_birthday] = bytes2(predictableRandom[0]) | ( bytes2(predictableRandom[1]) >> 8 ) | ( bytes3(predictableRandom[2]) >> 16 );
-      chubbiness[_birthday] = 35+((55*uint256(uint8(predictableRandom[3])))/255);
-
       return _birthday;
   }
 
   function tokenURI(uint256 id) public view override returns (string memory) {
       require(_exists(id), "not exist");
-      string memory name = string(abi.encodePacked(bday[id].month, " ",bday[id].day));
+      string memory owner = uint160(ownerOf(id)).toHexString(20);
+      string memory name = string(abi.encodePacked(bday[id].month, " ",bday[id].day, bday[id].ordinal));
       string memory description = string(abi.encodePacked('Happy Birthday'));
       string memory image = Base64.encode(bytes(generateSVGofTokenById(id)));
+      string memory day = string(abi.encodePacked(bday[id].day));
+      string memory month = string(abi.encodePacked(bday[id].month));
 
       return
           string(
@@ -85,14 +68,12 @@ contract Birthday is ERC721, Ownable {
                               name,
                               '", "description":"',
                               description,
-                              '", "external_url":"https://burnyboys.com/token/',
-                              id.toString(),
-                              '", "attributes": [{"trait_type": "color", "value": "#',
-                              color[id].toColor(),
-                              '"},{"trait_type": "chubbiness", "value": ',
-                              uint2str(chubbiness[id]),
-                              '}], "owner":"',
-                              (uint160(ownerOf(id))).toHexString(20),
+                              '", "attributes": [{"trait_type": "month", "value": "',
+                              month,
+                              '"},{"trait_type": "day", "value": "',
+                              day,
+                              '"}], "owner":"',
+                              owner,
                               '", "image": "',
                               'data:image/svg+xml;base64,',
                               image,
@@ -121,12 +102,25 @@ contract Birthday is ERC721, Ownable {
     
   '<svg width="400" height="400">',
   '<rect width="400" height="400" style="=fill:black" />',
-  '<text x="150" y="220" font-size="6em" >🎂</text>',
-  '<text x="40" y="360" font-size="2em" font-family="Helvetica" fill="white"> ',bday[id].month, " ",bday[id].day, '</text>',
+  '<text x="200" y="200" font-size="2em" text-anchor="middle" font-family="Helvetica" fill="white" >',bday[id].month, " ",bday[id].day, bday[id].ordinal, '</text>',
+  '<text x="40" y="360" font-size="2em" font-family="Helvetica" fill="white"> ''</text>',
   '</svg>'));
 
     return render;
   }
+/**
+@dev returns number into ordinal date */
+function ordinal(uint256 _day) internal view returns (string memory)  {
+  if (_day == 1 || _day == 21 || _day == 31) {
+    return ("st");
+  } else if (_day == 2) {
+    return ("nd");
+  } else if (_day == 3) {
+    return ("rd");
+  } else {
+    return ("th");
+  }
+}
 
 /**
 @dev Map Bday Struct
@@ -134,17 +128,18 @@ contract Birthday is ERC721, Ownable {
 @param _month Month of bday
 @param _day Day of bday */
 
-function mapBday(uint256 _birthday, string memory _month, string memory _day) private {
+function mapBday(uint256 _birthday, string memory _month, uint256 _day) private {
     string memory month = string(abi.encodePacked(_month));
-    string memory day = string(abi.encodePacked(_day));
+    string memory day = string(abi.encodePacked(uint2str(_day)));
+    string memory ordinal = string(abi.encodePacked(ordinal(_day)));
     Birthday storage birthday = bday[_birthday];
         birthday.month = _month;
-        birthday.day = _day;
-  
+        birthday.day = day;
+        birthday.ordinal = ordinal;
 }
 
-  /**  x
-@dev Converts day number to Bday
+/**
+@dev Set bday mapping
 @param _day uint256
 */
 function setBday(uint256 _day) internal  {
@@ -152,46 +147,41 @@ function setBday(uint256 _day) internal  {
       revert("Invalid day");
     }
     else if (_day <= 31 && _day >= 1 ) {
-
-    mapBday(_day, "January", uint2str(_day));
-      //  return (string(abi.encodePacked("January", " ", uint2str(_day))));
+      mapBday(_day, "January", _day);
     }
-    // else if (_day <= 31 && _day >= 1 ) {
-    //     return (string(abi.encodePacked("January", " ", uint2str(_day))));
-    // }
-    // else if (_day <= 60 && _day >= 32) {
-    //     return (string(abi.encodePacked("February", " ", uint2str(_day - 31))));
-    // }
-    // else if (_day <= 91 && _day >= 61) {
-    //     return (string(abi.encodePacked("March" , " " , uint2str (_day - 60))));
-    // }
-    // else if (_day <= 121 && _day >= 92) {
-    //     return (string(abi.encodePacked("April" , " " , uint2str(_day - 91))));
-    // }
-    // else if (_day <= 152 && _day >= 122) {
-    //     return (string(abi.encodePacked("May" , " " , uint2str(_day - 121))));
-    // }
-    // else if  (_day <= 182 && _day >= 153) {
-    //     return (string(abi.encodePacked("June" , " " , uint2str(_day - 152))));
-    // }
-    // else if (_day <= 213 && _day >= 183) {
-    //     return (string(abi.encodePacked("July" , " " , uint2str(_day - 182))));
-    // }
-    // else if (_day <= 244 && _day >= 214) {
-    //     return (string(abi.encodePacked("August" , " " , uint2str(_day - 213))));
-    // }
-    // else if (_day <= 274 && _day >= 245) {
-    //     return (string(abi.encodePacked("September" , " " , uint2str( _day - 244))));
-    // }
-    // else if (_day <= 305 && _day >= 275) {
-    //     return (string(abi.encodePacked("October" , " " , uint2str( _day - 274))));
-    // }
-    // else if (_day <= 335 && _day >= 306) {
-    //     return (string(abi.encodePacked("November" , " " , uint2str( _day - 305))));
-    // }
-    // else if (_day <= 366 && _day >= 336) {
-    //     return (string(abi.encodePacked("December" , " " , uint2str( _day - 335))));
-    // }
+    else if (_day <= 60 && _day >= 32) {
+      mapBday(_day, "February", _day -31 );
+    }
+    else if (_day <= 91 && _day >= 61) {
+      mapBday(_day, "March", _day - 60);
+    }
+    else if (_day <= 121 && _day >= 92) {
+      mapBday(_day, "April", _day - 91);
+    }
+    else if (_day <= 152 && _day >= 122) {
+      mapBday(_day, "May", _day - 121);
+    }
+    else if  (_day <= 182 && _day >= 153) {
+      mapBday(_day, "June", _day - 152);
+    }
+    else if (_day <= 213 && _day >= 183) {
+      mapBday(_day, "July", _day - 182);
+    }
+    else if (_day <= 244 && _day >= 214) {
+      mapBday(_day, "August", _day - 213);
+    }
+    else if (_day <= 274 && _day >= 245) {
+      mapBday(_day, "September", _day - 244);
+    }
+    else if (_day <= 305 && _day >= 275) {
+      mapBday(_day, "October", _day - 274);
+    }
+    else if (_day <= 335 && _day >= 306) {
+      mapBday(_day, "November", _day - 305);
+    }
+    else if (_day <= 366 && _day >= 336) {
+      mapBday(_day, "December", _day - 335);
+    }
   }
 
   function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
