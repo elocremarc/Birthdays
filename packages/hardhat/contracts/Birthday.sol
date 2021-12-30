@@ -113,9 +113,9 @@ contract Birthday is ERC721, Ownable {
 function ordinal(uint256 _day) internal view returns (string memory)  {
   if (_day == 1 || _day == 21 || _day == 31) {
     return ("st");
-  } else if (_day == 2) {
+  } else if (_day == 2 || _day == 22) {
     return ("nd");
-  } else if (_day == 3) {
+  } else if (_day == 3 || _day == 23) {
     return ("rd");
   } else {
     return ("th");
