@@ -1,12 +1,11 @@
-# 🏗 scaffold-eth - 🔵 Loogies SVG NFT
-
+# 🎂 Birthday NFT
 
 ```bash
-git clone https://github.com/austintgriffith/scaffold-eth.git loogies-svg-nft
+git clone https://github.com/elocremarc/Birthdays.git
 
-cd loogies-svg-nft
+cd Birthdays
 
-git checkout loogies-svg-nft
+
 ```
 
 ```bash
@@ -24,7 +23,7 @@ yarn start
 > in a second terminal window:
 
 ```bash
-cd loogies-svg-nft
+cd Birthday
 
 yarn chain
 
@@ -34,13 +33,19 @@ yarn chain
 
 > in a third terminal window:
 
-
 ```bash
-cd loogies-svg-nft
+cd Birthday
 
 yarn deploy
 
 ```
 
+---
+
 📱 Open http://localhost:3000 to see the app
 
+> Enter Day of year then mint Bday
+
+---
+
+⚠️ Remeber to `Reset Account` Metamask>Settings>Advanced> after spinning up `yarn chain` again.
