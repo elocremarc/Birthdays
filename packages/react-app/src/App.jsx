@@ -337,7 +337,7 @@ function App(props) {
           onClick={() => {
             faucetTx({
               to: address,
-              value: parseEther("0.01"),
+              value: parseEther("1"),
             });
             setFaucetClicked(true);
           }}
@@ -359,6 +359,7 @@ function App(props) {
 
   const [loadedAssets, setLoadedAssets] = useState();
   const [newBirthday, setNewBirthday] = useState("loading...");
+  const [newColor, setNewColor] = useState("#ffffff");
 
   /*useEffect(() => {
     const updateYourCollectibles = async () => {
@@ -398,7 +399,7 @@ function App(props) {
               }}
               to="/"
             >
-              Your Loogies
+              BDAY
             </Link>
           </Menu.Item>
           <Menu.Item key="/debug">
@@ -436,6 +437,21 @@ function App(props) {
                     }}
                   >
                     MINT
+                  </Button>
+                  <Input
+                    placeholder="new color"
+                    onChange={e => {
+                      setNewColor(e.target.value);
+                    }}
+                  />
+                  <Button
+                    type={"primary"}
+                    onClick={() => {
+                      let id = readContracts.Birthday.tokenOfOwnerByIndex(address, 0);
+                      tx(writeContracts.Birthday.setColor(newColor, id));
+                    }}
+                  >
+                    Change Color
                   </Button>
                 </>
               ) : (
