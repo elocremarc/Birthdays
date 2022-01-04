@@ -18,5 +18,7 @@ describe("Perpetual Birthday Party!", function () {
     it("Should have proper owner", async function () {
       expect(await birthday.owner()).to.equal(owner.address);
     });
+    it("Should mint for proper price", async function () {  
+      
   });
 });

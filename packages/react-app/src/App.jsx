@@ -28,7 +28,7 @@ import {
   useUserProvider,
 } from "./hooks";
 import { BlockPicker } from "react-color";
-
+import { ethers } from "ethers";
 const { BufferList } = require("bl");
 // https://www.npmjs.com/package/ipfs-http-client
 const ipfsAPI = require("ipfs-http-client");
@@ -432,7 +432,7 @@ function App(props) {
                   <Button
                     type={"primary"}
                     onClick={() => {
-                      tx(writeContracts.Birthday.mintItem(newBirthday));
+                      tx(writeContracts.Birthday.mintItem(newBirthday, { value: utils.parseEther("0.07") }));
                     }}
                   >
                     MINT
@@ -527,7 +527,13 @@ function App(props) {
                 value={readContracts && readContracts.YourCollectible && readContracts.YourCollectible.address}
               />
             </div>
-
+            <Contract
+              name="Colors"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
             <Contract
               name="Birthday"
               signer={userProvider.getSigner()}

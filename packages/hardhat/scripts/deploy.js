@@ -21,7 +21,7 @@ const main = async () => {
 
   // deploy the contract with all the artworks forSale
   const yourCollectible = await deploy("Birthday" /*,[ bytes32Array ]*/); // <-- add in constructor args like line 19 vvvv
-
+  const Colors = await deploy("Colors");
   yourCollectible.transferOwnership(
     "0x34aA3F359A9D614239015126635CE7732c18fDF3"
   ); //austingriffith.eth

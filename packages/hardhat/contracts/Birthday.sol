@@ -29,16 +29,23 @@ contract Birthday is ERC721, Ownable {
   mapping (uint256 => Birthday) public bday;
   mapping (uint256 => bool) public claimedBirthday;
   mapping (address => bool) public  claimed;
+  mapping (uint256 => string) public colors;
   
   uint256 maxDays = 366;
   uint256 PRICE = 7 * 10**16;
+  string baseColor = "#000000";
+
+  function setColor(string memory color, uint id) public {
+    require(msg.sender == ownerOf(id), "Only owner can set color");
+    colors[id] = color;
+  }
 
   function mintItem(uint256 _birthday)
       public payable
       returns (uint256)
   {
       
-      require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
+      // require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
       require(msg.value >= PRICE, "Too low price");
       claimed[msg.sender] = true;
       require(!claimedBirthday[_birthday], "Birthday already claimed :)");
@@ -56,6 +63,7 @@ contract Birthday is ERC721, Ownable {
       string memory image = Base64.encode(bytes(generateSVGofTokenById(id)));
       string memory day = string(abi.encodePacked(bday[id].day));
       string memory month = string(abi.encodePacked(bday[id].month));
+
 
       return
           string(
@@ -101,8 +109,8 @@ contract Birthday is ERC721, Ownable {
     string memory render = string(abi.encodePacked(
     
   '<svg width="400" height="400">',
-  '<rect width="400" height="400" style="=fill:black" />',
-  '<text x="200" y="200" font-size="2em" text-anchor="middle" font-family="Helvetica" fill="white" >',bday[id].month, " ",bday[id].day, bday[id].ordinal, '</text>',
+  '<rect width="400" height="400" fill="',colors[id],'" />',
+  '<text x="200" y="200" font-size="2em" text-anchor="middle" font-family="Helvetica" fill="white" > ''🎂'," ",bday[id].month, " ",bday[id].day, bday[id].ordinal, '</text>',
   '<text x="40" y="360" font-size="2em" font-family="Helvetica" fill="white"> ''</text>',
   '</svg>'));
 

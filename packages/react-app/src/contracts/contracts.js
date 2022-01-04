@@ -1,1 +1,1 @@
-module.exports = ["Birthday"];
+module.exports = ["Birthday","Colors"];
