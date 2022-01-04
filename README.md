@@ -44,7 +44,12 @@ yarn deploy
 
 📱 Open http://localhost:3000 to see the app
 
+Mint Bday limit 1
 > Enter Day of year then mint Bday
+
+Change color of NFT once you own it
+
+> Enter color or hex code pay gas
 
 ---
 
