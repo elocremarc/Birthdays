@@ -29,12 +29,80 @@ import {
 } from "./hooks";
 import { BlockPicker } from "react-color";
 import { ethers } from "ethers";
+import styled, { keyframes } from "styled-components";
+import { bounceIn, rubberBand, pulse } from "react-animations";
+import { v4 as uuidv4 } from "uuid";
+
 const { BufferList } = require("bl");
 // https://www.npmjs.com/package/ipfs-http-client
 const ipfsAPI = require("ipfs-http-client");
 
 const ipfs = ipfsAPI({ host: "ipfs.infura.io", port: "5001", protocol: "https" });
+const bounce = keyframes`${bounceIn}`;
+const pulseAnimation = keyframes`${pulse}`;
+const scale = keyframes`
+  from {
+    transform: scale(1);
+  }
 
+  to {
+    transform: scale(1.1);
+  }
+`;
+
+const ColorCard = styled.div`
+  width: 100px;
+  height: 100px;
+  background-color: ${props => props.color};
+  border-radius: 5px;
+  transition: all 0.5s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    transition-duration: 0.5s;
+  }
+`;
+
+const Bounce = styled.div`
+  animation: 1.5s ${pulse};
+`;
+
+const NFTsvg = ({ bgColor, textColor }) => (
+  <>
+    <svg width="400" height="400">
+      <rect width="400" height="400" fill={bgColor} />
+      <text x="200" y="300" letter-spacing="3px" font-size="3em" text-anchor="middle" font-family="Impact" fill="black">
+        🎂
+      </text>
+
+      <text
+        fill={textColor}
+        x="200"
+        y="210"
+        letter-spacing="3px"
+        font-size="4em"
+        text-anchor="middle"
+        font-family="Impact"
+      >
+        April
+      </text>
+      <text
+        x="350"
+        y="50"
+        letter-spacing="2px"
+        font-size="2em"
+        text-anchor="middle"
+        font-family="Impact"
+        fill={textColor}
+      >
+        <tspan>20</tspan>
+        <tspan font-size="0.6em" dy="-0.55em">
+          th
+        </tspan>
+      </text>
+    </svg>
+  </>
+);
 //console.log("📦 Assets: ", assets);
 
 /*
@@ -181,6 +249,9 @@ function App(props) {
   const balance = useContractReader(readContracts, "Birthday", "balanceOf", [address]);
   console.log("🤗 balance:", balance);
 
+  const balanceColors = useContractReader(readContracts, "Colors", "balanceOf", [address]);
+  console.log("🤗 balance Colors:", balance);
+
   // 📟 Listen for broadcast events
   const transferEvents = useEventListener(readContracts, "Birthday", "Transfer", localProvider, 1);
   console.log("📟 Transfer events:", transferEvents);
@@ -225,6 +296,172 @@ function App(props) {
     updateYourCollectibles();
   }, [address, yourBalance]);
 
+  const yourColorBalance = balanceColors && balanceColors.toNumber && balanceColors.toNumber();
+  const [yourColors, setYourColors] = useState([]);
+  const [newBirthday, setNewBirthday] = useState("loading...");
+  const [newColor, setNewColor] = useState("black");
+  const [colorSelection, setColorSelection] = useState(null);
+  const [preview, setPreview] = useState(false);
+  const [isTextWhite, setTextWhite] = useState(true);
+
+  const Color = () => {
+    return (
+      <Row gutter={[8, 8]}>
+        {yourColors.map(yourColors => {
+          return (
+            <Col span={4}>
+              <ColorCard
+                color={yourColors.color}
+                key={yourColors.uri + "_" + yourColors.owner}
+                onClick={() => {
+                  setPreview(true);
+                  setColorSelection(yourColors.id);
+                  setNewColor(yourColors.color);
+                }}
+              >
+                {yourColors.color}
+              </ColorCard>
+            </Col>
+          );
+        })}
+      </Row>
+    );
+  };
+
+  const Birthday = ({ item, id }) => {
+    const [textColor, setTextColor] = useState("black");
+    return (
+      <>
+        <Color />
+        <Bounce>
+          <Card
+            title={
+              <div>
+                <span style={{ fontSize: 18, marginRight: 8 }}>{item.name}</span>
+              </div>
+            }
+          >
+            <a
+              href={
+                "https://opensea.io/assets/" +
+                (readContracts && readContracts.Birthday && readContracts.Birthday.address) +
+                "/" +
+                item.id
+              }
+              target="_blank"
+            >
+              {preview ? <NFTsvg bgColor={newColor} textColor={textColor} /> : <img src={item.image} />}
+            </a>
+            <div>{item.description}</div>
+          </Card>
+        </Bounce>
+
+        <div style={{}}>
+          <div>
+            <Button
+              type={"primary"}
+              shape="round"
+              onClick={() => {
+                //let id = readContracts.Birthday.tokenOfOwnerByIndex(address, o);
+                tx(writeContracts.Birthday.setColor(colorSelection, id));
+              }}
+            >
+              Change Color
+            </Button>
+            {preview ? (
+              <Button
+                type={"primary"}
+                shape="round"
+                onClick={() => {
+                  //let id = readCont
+                  setPreview(false);
+                }}
+              >
+                Toggle Preview
+              </Button>
+            ) : (
+              <Button
+                type={"primary"}
+                shape="round"
+                onClick={() => {
+                  //let id = readCont
+                  setPreview(true);
+                }}
+              >
+                Toggle Preview{" "}
+              </Button>
+            )}
+            {isTextWhite ? (
+              <Button
+                shape="round"
+                type={"primary"}
+                onClick={() => {
+                  //tx(writeContracts.Birthday.toggleDarkmode(id));
+                  setTextColor("white");
+                  setTextWhite(false);
+                  setPreview(true);
+                }}
+              >
+                White Text
+              </Button>
+            ) : (
+              <Button
+                shape="round"
+                type={"primary"}
+                onClick={() => {
+                  //tx(writeContracts.Birthday.toggleDarkmode(id));
+                  setTextColor("black");
+                  setTextWhite(true);
+                  setPreview(true);
+                }}
+              >
+                Black Text
+              </Button>
+            )}
+          </div>
+          <div></div>
+        </div>
+      </>
+    );
+  };
+
+  useEffect(() => {
+    const updateColors = async () => {
+      const colorUpdate = [];
+      for (let tokenIndex = 0; tokenIndex < balanceColors; tokenIndex++) {
+        try {
+          console.log("Getting token index", tokenIndex);
+          const tokenId = await readContracts.Colors.tokenOfOwnerByIndex(address, tokenIndex);
+          console.log("tokenId", tokenId);
+          const tokenURI = await readContracts.Colors.tokenURI(tokenId);
+          const hexColor = await readContracts.Colors.getHexColor(tokenId);
+          setNewColor(hexColor);
+          console.log("hexColor", hexColor);
+          colorUpdate.push({ id: tokenId, uri: tokenURI, color: hexColor, owner: address });
+          console.log("colors Update", colorUpdate);
+          const jsonManifestString = atob(tokenURI.substring(29));
+          console.log("jsonManifestString", jsonManifestString);
+
+          /*
+          const ipfsHash = tokenURI.replace("https://ipfs.io/ipfs/", "");
+          console.log("ipfsHash", ipfsHash);
+          const jsonManifestBuffer = await getFromIPFS(ipfsHash);
+          */
+          try {
+            const jsonManifest = JSON.parse(jsonManifestString);
+            console.log("jsonManifest", jsonManifest);
+            colorUpdate.push({ id: tokenId, uri: tokenURI, color: hexColor, owner: address, ...jsonManifest });
+          } catch (e) {
+            console.log(e);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      setYourColors(colorUpdate.reverse());
+    };
+    updateColors();
+  }, [address, yourColorBalance]);
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -358,8 +595,12 @@ function App(props) {
   const [transferToAddresses, setTransferToAddresses] = useState({});
 
   const [loadedAssets, setLoadedAssets] = useState();
-  const [newBirthday, setNewBirthday] = useState("loading...");
-  const [newColor, setNewColor] = useState("#ffffff");
+
+  // Then read your DAI balance like:
+  /*
+  const myMainnetDAIBalance = useContractReader({ DAI: mainnetDAIContract }, "DAI", "balanceOf", [
+    "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+  ]);*/
 
   /*useEffect(() => {
     const updateYourCollectibles = async () => {
@@ -425,34 +666,25 @@ function App(props) {
             <div style={{ maxWidth: 820, margin: "auto", marginTop: 32, paddingBottom: 32 }}>
               {isSigner ? (
                 <>
-                  <Input
-                    onChange={e => {
-                      setNewBirthday(e.target.value);
-                    }}
-                  />
-                  <Button
-                    type={"primary"}
-                    onClick={() => {
-                      tx(writeContracts.Birthday.mintItem(newBirthday, { value: utils.parseEther("0.07") }));
-                    }}
-                  >
-                    MINT
-                  </Button>
-                  <Input
-                    placeholder="new color"
-                    onChange={e => {
-                      setNewColor(e.target.value);
-                    }}
-                  />
-                  <Button
-                    type={"primary"}
-                    onClick={() => {
-                      let id = readContracts.Birthday.tokenOfOwnerByIndex(address, 0);
-                      tx(writeContracts.Birthday.setColor(newColor, id));
-                    }}
-                  >
-                    Change Color
-                  </Button>
+                  {yourBalance === 0 ? (
+                    <>
+                      <Input
+                        onChange={e => {
+                          setNewBirthday(e.target.value);
+                        }}
+                      />
+                      <Button
+                        type={"primary"}
+                        onClick={() => {
+                          tx(writeContracts.Birthday.mintItem(newBirthday, { value: utils.parseEther("0.07") }));
+                        }}
+                      >
+                        MINT
+                      </Button>
+                    </>
+                  ) : (
+                    <></>
+                  )}
                 </>
               ) : (
                 <Button type={"primary"} onClick={loadWeb3Modal}>
@@ -460,7 +692,6 @@ function App(props) {
                 </Button>
               )}
             </div>
-
             <div style={{ width: 820, margin: "auto", paddingBottom: 256 }}>
               <List
                 bordered
@@ -471,55 +702,8 @@ function App(props) {
                   console.log("IMAGE", item.image);
 
                   return (
-                    <List.Item key={id + "_" + item.uri + "_" + item.owner}>
-                      <Card
-                        title={
-                          <div>
-                            <span style={{ fontSize: 18, marginRight: 8 }}>{item.name}</span>
-                          </div>
-                        }
-                      >
-                        <a
-                          href={
-                            "https://opensea.io/assets/" +
-                            (readContracts && readContracts.Birthday && readContracts.Birthday.address) +
-                            "/" +
-                            item.id
-                          }
-                          target="_blank"
-                        >
-                          <img src={item.image} />
-                        </a>
-                        <div>{item.description}</div>
-                      </Card>
-
-                      <div>
-                        owner:{" "}
-                        <Address
-                          address={item.owner}
-                          ensProvider={mainnetProvider}
-                          blockExplorer={blockExplorer}
-                          fontSize={16}
-                        />
-                        <AddressInput
-                          ensProvider={mainnetProvider}
-                          placeholder="transfer to address"
-                          value={transferToAddresses[id]}
-                          onChange={newValue => {
-                            const update = {};
-                            update[id] = newValue;
-                            setTransferToAddresses({ ...transferToAddresses, ...update });
-                          }}
-                        />
-                        <Button
-                          onClick={() => {
-                            console.log("writeContracts", writeContracts);
-                            tx(writeContracts.Birthday.transferFrom(address, transferToAddresses[id], id));
-                          }}
-                        >
-                          Transfer
-                        </Button>
-                      </div>
+                    <List.Item key={uuidv4()}>
+                      <Birthday item={item} id={id} />
                     </List.Item>
                   );
                 }}

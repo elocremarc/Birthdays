@@ -11,12 +11,16 @@ contract Colors is ERC721 {
     mapping (uint256 => string) public colors;
 
 
-    function mint( uint256 _tokenId) public payable {        
+    function mint( uint256 _tokenId) public {        
         _mint(msg.sender, _tokenId);
     }
 
-    function getHexColor(uint id) public returns ( string memory) {
-        return  "#ff53de";
+    function getHexColor(uint id)  public view returns ( string memory) {
+        if(id == 1) return "#aecef8";
+        if(id == 2) return "#fabbe2";
+        if(id == 3) return "#21b20f";
+        if(id == 4) return "#f8f5ef";
+        else return "grey";
     }
 
 }

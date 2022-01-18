@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import 'base64-sol/base64.sol';
 
 import './HexStrings.sol';
+import './ColorsInterface.sol';
 //learn more: https://docs.openzeppelin.com/contracts/3.x/erc721
 
 // GET LISTED ON OPENSEA: https://testnets.opensea.io/get-listed/step-two
@@ -30,30 +31,115 @@ contract Birthday is ERC721, Ownable {
   mapping (uint256 => bool) public claimedBirthday;
   mapping (address => bool) public  claimed;
   mapping (uint256 => string) public colors;
+  mapping (uint256 => string) public colorText;
+  mapping (uint256 => bool) public colorUsed;
   
   uint256 maxDays = 366;
   uint256 PRICE = 7 * 10**16;
-  string baseColor = "#000000";
+  uint256 presentAmount = 5 * 10**16;
+  string baseColor = "#1B191B";
+  string baseColorLight = "#F7F9F7";
+  uint currentBday = 0;
+  bool public presentsActive = true;
+  address public colorsContract = 0x9fdb31F8CE3cB8400C7cCb2299492F2A498330a4;
 
-  function setColor(string memory color, uint id) public {
+  function setColor(uint colorsTokenId, uint id) public {
     require(msg.sender == ownerOf(id), "Only owner can set color");
+    require(ColorsInterface(colorsContract).ownerOf(colorsTokenId) == _msgSender() , "Sender does not own color");
+    // require(!colorUsed[colorsTokenId], "Color already used");
+    string memory color  = ColorsInterface(colorsContract).getHexColor(colorsTokenId);
+    colorUsed[colorsTokenId] = true;
     colors[id] = color;
+  }
+//set colors contract
+
+/**
+@dev Set the current birthday to the given id.
+@param id The id of the birthday to set.
+ */
+function setCurrentBday(uint id) public payable{
+  require(presentsActive, "Presents are not active at this time");
+  // require(msg.sender != ownerOf(id), "Present Sender cannot be the same as the bdayRecipient");
+  require(msg.value >= presentAmount, "Present amount is not enough to activate birthday");
+  require(id != currentBday, "Birthday already set");
+  currentBday = id;
+  address payable bdayRecipient = payable(ownerOf(id));
+  bdayRecipient.transfer(msg.value);
+}
+/**
+@dev Admin Set the current birthday to the given id.
+@param id The id of the birthday to set.
+ */
+function setCurrentBdayAdmin(uint id) public onlyOwner{
+  require(id != currentBday, "Birthday already set");
+  currentBday = id;
+}
+/** 
+@dev Disable/Activate setCurrentBday public function.
+*/
+function togglePresentsActive() public onlyOwner{
+  if (presentsActive) {
+    presentsActive = false;
+  }
+  else {
+    presentsActive = true;
+  }
+}
+
+
+function setColorsContract(address _colorsContract) public onlyOwner {
+    colorsContract = _colorsContract;
+  } 
+  function invertTextColor(uint id) private {
+        require(msg.sender == ownerOf(id), "Only owner can set color");
+        if (compareStrings(baseColor,colorText[id])) {
+            colorText[id] = baseColorLight;
+        } else {
+            colorText[id] = baseColor;
+        }   
+    }
+  function toggleDarkmode(uint id) public {
+     require(msg.sender == ownerOf(id), "Only owner can set color");
+        if (compareStrings(baseColor,colors[id])) {
+            colorText[id] = baseColor;
+            colors[id] = baseColorLight;
+        } else if (compareStrings(baseColorLight,colors[id])) {
+            colorText[id] = baseColor;
+            colors[id] = baseColorLight;
+        } 
+        else {
+            invertTextColor(id);
+        }
   }
 
   function mintItem(uint256 _birthday)
       public payable
       returns (uint256)
   {
-      
       // require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
       require(msg.value >= PRICE, "Too low price");
       claimed[msg.sender] = true;
       require(!claimedBirthday[_birthday], "Birthday already claimed :)");
       claimedBirthday[_birthday] = true;
+      colors[_birthday] = baseColor;
+      colorText[_birthday] = baseColorLight;
       setBday(_birthday);
-      _mint(msg.sender,  _birthday);
+      _mint(msg.sender, _birthday);
       return _birthday;
   }
+
+  //get birthday by day of the year aka token id
+  function getBday(uint256 id) public view returns (string memory)
+  {
+    return string(abi.encodePacked(bday[id].month, " ",bday[id].day, bday[id].ordinal));
+  }
+
+  // withdaw ether from contract 
+  function withdraw() public onlyOwner {
+    require(address(this).balance > 0, "No ether to withdraw");
+    msg.sender.transfer(address(this).balance);
+  }
+  
 
   function tokenURI(uint256 id) public view override returns (string memory) {
       require(_exists(id), "not exist");
@@ -93,7 +179,7 @@ contract Birthday is ERC721, Ownable {
           );
   }
 
-  function generateSVGofTokenById(uint256 id) internal view returns (string memory) {
+  function generateSVGofTokenById(uint256 id) public view returns (string memory) {
 
     string memory svg = string(abi.encodePacked(
       '<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">',
@@ -106,16 +192,35 @@ contract Birthday is ERC721, Ownable {
 
   // Visibility is `public` to enable it being called by other contracts for composition.
   function renderTokenById(uint256 id) public view returns (string memory) {
+    if (id == currentBday){
+    
     string memory render = string(abi.encodePacked(
     
   '<svg width="400" height="400">',
   '<rect width="400" height="400" fill="',colors[id],'" />',
-  '<text x="200" y="200" font-size="2em" text-anchor="middle" font-family="Helvetica" fill="white" > ''🎂'," ",bday[id].month, " ",bday[id].day, bday[id].ordinal, '</text>',
-  '<text x="40" y="360" font-size="2em" font-family="Helvetica" fill="white"> ''</text>',
+  '<text x="240" y="300" letter-spacing="3px" font-size="3em" text-anchor="middle" font-family="Impact" fill="black">🎁<animate attributeName="font-size" values="2em;4em;2em" keyTimes="0; 0.5; 1" keySplines=".42,0,1,1;" dur="4s" repeatCount="indefinite" /></text>',
+  '<text x="200" y="300" letter-spacing="3px" font-size="3em" text-anchor="middle" font-family="Impact" fill="',colorText[id],'">  🎂 </text>',
+  '<text x="200" y="210" letter-spacing="3px" font-size="4em" text-anchor="middle" font-family="Impact" fill="',colorText[id],'"> '" ",bday[id].month, " "'</text>',
+  '<text x="380" y="50" letter-spacing="2px" font-size="2em" text-anchor="end" font-family="Impact" fill="',colorText[id],'"> <tspan>',bday[id].day,'</tspan><tspan font-size="0.6em" dy="-0.55em">', bday[id].ordinal,"" '</tspan></text>',
   '</svg>'));
+        return render;
 
-    return render;
-  }
+    } else {
+
+    string memory renderNormal = string(abi.encodePacked(
+    
+  '<svg width="400" height="400">',
+  '<rect width="400" height="400" fill="',colors[id],'" />',
+  '<text x="200" y="210" letter-spacing="3px" font-size="4em" text-anchor="middle" font-family="Impact" fill="',colorText[id],'"> '" ",bday[id].month, " "'</text>',
+  '<text x="380" y="50" letter-spacing="2px" font-size="2em" text-anchor="end" font-family="Impact" fill="',colorText[id],'"> <tspan>',bday[id].day,'</tspan><tspan font-size="0.6em" dy="-0.55em">', bday[id].ordinal,"" '</tspan></text>',
+  '</svg>') );
+      return renderNormal;
+  }}
+
+function compareStrings(string memory a, string memory b) public view returns (bool) {
+    return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+}
+
 /**
 @dev returns number into ordinal date */
 function ordinal(uint256 _day) internal view returns (string memory)  {
