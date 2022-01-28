@@ -8,9 +8,14 @@ import 'base64-sol/base64.sol';
 
 import './HexStrings.sol';
 import './ColorsInterface.sol';
-//learn more: https://docs.openzeppelin.com/contracts/3.x/erc721
+/*
+██████╗░██╗██████╗░████████╗██╗░░██╗██████╗░░█████╗░██╗░░░██╗
+██╔══██╗██║██╔══██╗╚══██╔══╝██║░░██║██╔══██╗██╔══██╗╚██╗░██╔╝
+██████╦╝██║██████╔╝░░░██║░░░███████║██║░░██║███████║░╚████╔╝░
+██╔══██╗██║██╔══██╗░░░██║░░░██╔══██║██║░░██║██╔══██║░░╚██╔╝░░
+██████╦╝██║██║░░██║░░░██║░░░██║░░██║██████╔╝██║░░██║░░░██║░░░
+╚═════╝░╚═╝╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚═════╝░╚═╝░░╚═╝░░░╚═╝░░░**/
 
-// GET LISTED ON OPENSEA: https://testnets.opensea.io/get-listed/step-two
 
 contract Birthday is ERC721, Ownable {
 
