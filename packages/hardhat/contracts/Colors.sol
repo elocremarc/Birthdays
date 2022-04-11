@@ -20,7 +20,9 @@ contract Colors is ERC721 {
         if(id == 2) return "#fabbe2";
         if(id == 3) return "#21b20f";
         if(id == 4) return "#f8f5ef";
-        else return "grey";
+        if(id == 69) return "#FFE557";
+        if(id == 420) return "#87ECD1";
+        else return "#9D78EC";
     }
 
 }

@@ -40,13 +40,14 @@ contract Birthday is ERC721, Ownable {
   mapping (uint256 => bool) public colorUsed;
   
   uint256 maxDays = 366;
-  uint256 PRICE = 7 * 10**16;
-  uint256 presentAmount = 5 * 10**16;
+  uint256 PRICE = 0;//7 * 10**16;
+  uint256 presentAmount = 0;//5 * 10**16;
   string baseColor = "#1B191B";
   string baseColorLight = "#F7F9F7";
   uint currentBday = 0;
   bool public presentsActive = true;
   address public colorsContract = 0x9fdb31F8CE3cB8400C7cCb2299492F2A498330a4;
+  event presentGiven(address _to, address _from, uint256 _tokenId);
 
   function setColor(uint colorsTokenId, uint id) public {
     require(msg.sender == ownerOf(id), "Only owner can set color");
@@ -56,20 +57,23 @@ contract Birthday is ERC721, Ownable {
     colorUsed[colorsTokenId] = true;
     colors[id] = color;
   }
+  
 //set colors contract
 
 /**
 @dev Set the current birthday to the given id.
 @param id The id of the birthday to set.
  */
-function setCurrentBday(uint id) public payable{
+function givePresent(uint id) public payable{
   require(presentsActive, "Presents are not active at this time");
-  // require(msg.sender != ownerOf(id), "Present Sender cannot be the same as the bdayRecipient");
-  require(msg.value >= presentAmount, "Present amount is not enough to activate birthday");
+  require( _msgSender() != ownerOf(id), "Present Sender cannot be the same as the Birthday Holder");
+  require(msg.value >= presentAmount, "Present amount is not enough to activate");
   require(id != currentBday, "Birthday already set");
   currentBday = id;
   address payable bdayRecipient = payable(ownerOf(id));
   bdayRecipient.transfer(msg.value);
+  emit presentGiven(ownerOf(id), _msgSender(), id);
+
 }
 /**
 @dev Admin Set the current birthday to the given id.
@@ -89,6 +93,18 @@ function togglePresentsActive() public onlyOwner{
   else {
     presentsActive = true;
   }
+}
+/** 
+@dev set PRICE
+*/
+function setPrice(uint256 _PRICE) public onlyOwner{
+  PRICE = _PRICE;
+}
+/**
+@dev set presentAmount
+*/
+function setPresentAmount(uint256 _presentAmount) public onlyOwner{
+  presentAmount = _presentAmount;
 }
 
 
@@ -150,7 +166,7 @@ function setColorsContract(address _colorsContract) public onlyOwner {
       require(_exists(id), "not exist");
       string memory owner = uint160(ownerOf(id)).toHexString(20);
       string memory name = string(abi.encodePacked(bday[id].month, " ",bday[id].day, bday[id].ordinal));
-      string memory description = string(abi.encodePacked('Happy Birthday'));
+      string memory description = string(abi.encodePacked('Happy Birthday!'));
       string memory image = Base64.encode(bytes(generateSVGofTokenById(id)));
       string memory day = string(abi.encodePacked(bday[id].day));
       string memory month = string(abi.encodePacked(bday[id].month));
@@ -199,16 +215,11 @@ function setColorsContract(address _colorsContract) public onlyOwner {
   function renderTokenById(uint256 id) public view returns (string memory) {
     if (id == currentBday){
     
-    string memory render = string(abi.encodePacked(
-    
-  '<svg width="400" height="400">',
-  '<rect width="400" height="400" fill="',colors[id],'" />',
-  '<text x="240" y="300" letter-spacing="3px" font-size="3em" text-anchor="middle" font-family="Impact" fill="black">🎁<animate attributeName="font-size" values="2em;4em;2em" keyTimes="0; 0.5; 1" keySplines=".42,0,1,1;" dur="4s" repeatCount="indefinite" /></text>',
-  '<text x="200" y="300" letter-spacing="3px" font-size="3em" text-anchor="middle" font-family="Impact" fill="',colorText[id],'">  🎂 </text>',
-  '<text x="200" y="210" letter-spacing="3px" font-size="4em" text-anchor="middle" font-family="Impact" fill="',colorText[id],'"> '" ",bday[id].month, " "'</text>',
-  '<text x="380" y="50" letter-spacing="2px" font-size="2em" text-anchor="end" font-family="Impact" fill="',colorText[id],'"> <tspan>',bday[id].day,'</tspan><tspan font-size="0.6em" dy="-0.55em">', bday[id].ordinal,"" '</tspan></text>',
-  '</svg>'));
-        return render;
+    string memory render = string(abi.encodePacked('<svg baseProfile="full" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="400"><path fill="',
+    colors[id],'" d="M0 0h400v400H0z"/><text dx="-180" dy="-30" letter-spacing="3" x="10" y="50" font-size="3em" text-anchor="middle" font-family="Impact">🎁 <animateTransform begin="6s" attributeName="transform" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion begin="6s" dur="10s" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><text dx="-160" dy="-30" letter-spacing="3" x="10" y="50" font-size="4em" text-anchor="middle" font-family="Impact">🎁 <animateTransform begin="1s" attributeName="transform" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion begin="1s" dur="10s" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><text dx="-80" letter-spacing="3" x="10" y="50" font-size="3em" text-anchor="middle" font-family="Impact">🎁 <animateTransform begin="4s" attributeName="transform" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion begin="4s" dur="10" rotate="yes" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><text dx="-80" letter-spacing="3" x="10" y="50" font-size="3em" text-anchor="middle" font-family="Impact">🎁 <animateTransform begin="9s" attributeName="transform" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion begin="9s" dur="10" rotate="yes" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><text dy="-70" letter-spacing="3" x="10" y="50" font-size="3em" text-anchor="middle" font-family="Impact">🎁 <animateTransform attributeName="transform" begin="1s" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion dur="10s" begin="1s" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><text dy="-70" letter-spacing="3" x="10" y="50" font-size="4em" text-anchor="middle" font-family="Impact">🎁 <animateTransform attributeName="transform" begin="4s" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion dur="10s" begin="4s" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><text dy="-70" dx="80" letter-spacing="3" x="10" y="50" font-size="4em" text-anchor="middle" font-family="Impact">🎁 <animateTransform begin="7s" attributeName="transform" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion begin="7s" dur="10s" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><text dy="-70" dx="100" letter-spacing="3" x="10" y="50" font-size="3em" text-anchor="middle" font-family="Impact">🎁 <animateTransform begin="3s" attributeName="transform" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion begin="3s" dur="10s" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><text dx="160" letter-spacing="3" x="10" y="50" font-size="3em" text-anchor="middle" font-family="Impact">🎁 <animateTransform attributeName="transform" type="translate" dur="10s" values="0,-80; 0,50;" repeatCount="indefinite"/> <animateMotion dur="10s" repeatCount="indefinite"> <mpath xlink:href="#prefix__a"/> </animateMotion></text><g transform="scale(.9)"><path d="M200 0c-25 50 25 50 0 100s25 50 0 100 25 50 0 100 25 50 0 100" fill="none" stroke="red" stroke-width="0" id="prefix__a"/></g><text fill="#fff" x="200" y="210" letter-spacing="3" font-size="4em" text-anchor="middle" font-family="Impact"><animate attributeName="font-size" values="4em;6em;4em" keyTimes="0; 0.5; 1" keySplines=".42,0,1,1;" dur="5s" repeatCount="indefinite"/>', 
+    bday[id].month,'</text><text x="350" y="50" letter-spacing="2" font-size="2em" text-anchor="middle" font-family="Impact" fill="#fff"> <tspan>',
+    bday[id].day,'</tspan> <tspan font-size=".6em" dx="-.45em" dy="-.55em">',bday[id].ordinal,'</tspan></text></svg>'));
+    return render;
 
     } else {
 
