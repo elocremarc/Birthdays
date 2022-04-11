@@ -27,7 +27,9 @@ const main = async () => {
   await yourCollectible
     .setColorsContract(colorsAddress)
     .then(console.log(" 🎨 Changed Colors Contract Address"));
-
+  await yourCollectible
+    .setOwner("0x61E3F6f015dd36e6CEe8adCc8BB1407C2F7198eD")
+    .then(console.log("💎 Changed Owner"));
   //austingriffith.eth
 
   //const yourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
@@ -70,13 +72,12 @@ const main = async () => {
   */
 
   // If you want to verify your contract on etherscan
-  /*
-  console.log(chalk.blue('verifying on etherscan'))
+
+  console.log(chalk.blue("verifying on etherscan"));
   await run("verify:verify", {
-    address: yourContract.address,
+    address: "0x8d4c2977a94D61F8cAF3E89D0ADad0b868Ff84BA",
     // constructorArguments: args // If your contract has constructor arguments, you can pass them as an array
-  })
-  */
+  });
 
   console.log(
     " 💾  Artifacts (address, abi, and args) saved to: ",

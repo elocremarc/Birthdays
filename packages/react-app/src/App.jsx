@@ -125,7 +125,7 @@ const NFTsvg = ({ bgColor, textColor }) => (
 */
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS.rinkeby; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true;
@@ -343,7 +343,7 @@ function App(props) {
           >
             <a
               href={
-                "https://opensea.io/assets/" +
+                "https://testnets.opensea.io/assets/" +
                 (readContracts && readContracts.Birthday && readContracts.Birthday.address) +
                 "/" +
                 item.id
@@ -417,7 +417,7 @@ function App(props) {
               >
                 Black Text
               </Button>
-            )}
+            )}{" "}
           </div>
           <div></div>
         </div>
@@ -676,7 +676,7 @@ function App(props) {
                       <Button
                         type={"primary"}
                         onClick={() => {
-                          tx(writeContracts.Birthday.mintItem(newBirthday, { value: utils.parseEther("0.07") }));
+                          tx(writeContracts.Birthday.mintItem(newBirthday, { value: utils.parseEther("0.0") }));
                         }}
                       >
                         MINT
@@ -691,6 +691,22 @@ function App(props) {
                   CONNECT WALLET
                 </Button>
               )}
+            </div>
+            <div style={{ padding: 32 }}>
+              <Input
+                style={{ maxWidth: 200 }}
+                onChange={e => {
+                  setNewBirthday(e.target.value);
+                }}
+              />
+              <Button
+                type={"primary"}
+                onClick={() => {
+                  tx(writeContracts.Colors.mint(newBirthday));
+                }}
+              >
+                MINT COLOR
+              </Button>
             </div>
             <div style={{ width: 820, margin: "auto", paddingBottom: 256 }}>
               <List
@@ -708,17 +724,6 @@ function App(props) {
                   );
                 }}
               />
-            </div>
-            <div style={{ maxWidth: 820, margin: "auto", marginTop: 32, paddingBottom: 256 }}>
-              🛠 built with{" "}
-              <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank">
-                🏗 scaffold-eth
-              </a>
-              🍴{" "}
-              <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank">
-                Fork this repo
-              </a>{" "}
-              and build a cool SVG NFT!
             </div>
           </Route>
           <Route path="/debug">
@@ -765,44 +770,6 @@ function App(props) {
       </div>
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} networks={NETWORKS} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
-
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              faucetAvailable ? (
-                <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider} />
-              ) : (
-                ""
-              )
-            }
-          </Col>
-        </Row>
-      </div>
     </div>
   );
 }
