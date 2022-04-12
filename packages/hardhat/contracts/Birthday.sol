@@ -137,7 +137,7 @@ function setColorsContract(address _colorsContract) public onlyOwner {
       public payable
       returns (uint256)
   {
-      // require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
+      require(!claimed[msg.sender], "You cant have 2 birthdays you silly goose");
       require(msg.value >= PRICE, "Too low price");
       claimed[msg.sender] = true;
       require(!claimedBirthday[_birthday], "Birthday already claimed :)");
