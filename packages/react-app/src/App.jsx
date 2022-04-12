@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-target-blank */
 import { LinkOutlined } from "@ant-design/icons";
 import { StaticJsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import { formatEther, parseEther } from "@ethersproject/units";
@@ -368,7 +369,7 @@ function App(props) {
             >
               Change Color
             </Button>
-            {preview ? (
+            {/* {preview ? (
               <Button
                 type={"primary"}
                 shape="round"
@@ -417,7 +418,7 @@ function App(props) {
               >
                 Black Text
               </Button>
-            )}{" "}
+            )}{" "} */}
           </div>
           <div></div>
         </div>
@@ -588,6 +589,7 @@ function App(props) {
   const [sending, setSending] = useState();
   const [ipfsHash, setIpfsHash] = useState();
   const [ipfsDownHash, setIpfsDownHash] = useState();
+  const [present, setPresent] = useState();
 
   const [downloading, setDownloading] = useState();
   const [ipfsContent, setIpfsContent] = useState();
@@ -597,11 +599,13 @@ function App(props) {
   const [loadedAssets, setLoadedAssets] = useState();
 
   // Then read your DAI balance like:
+  // eslint-disable-next-line spaced-comment
   /*
   const myMainnetDAIBalance = useContractReader({ DAI: mainnetDAIContract }, "DAI", "balanceOf", [
     "0x34aA3F359A9D614239015126635CE7732c18fDF3",
   ]);*/
 
+  // eslint-disable-next-line spaced-comment
   /*useEffect(() => {
     const updateYourCollectibles = async () => {
       const assetUpdate = [];
@@ -640,7 +644,27 @@ function App(props) {
               }}
               to="/"
             >
-              BDAY
+              Home
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="/Present">
+            <Link
+              onClick={() => {
+                setRoute("/Present");
+              }}
+              to="/Present"
+            >
+              Present
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="/Colors">
+            <Link
+              onClick={() => {
+                setRoute("/Colors");
+              }}
+              to="/Colors"
+            >
+              Mint Color
             </Link>
           </Menu.Item>
           <Menu.Item key="/debug">
@@ -650,7 +674,7 @@ function App(props) {
               }}
               to="/debug"
             >
-              Smart Contract
+              Smart Contracts
             </Link>
           </Menu.Item>
         </Menu>
@@ -669,6 +693,8 @@ function App(props) {
                   {yourBalance === 0 ? (
                     <>
                       <Input
+                        style={{ maxWidth: 300 }}
+                        placeholder="Input day of year during a leap year"
                         onChange={e => {
                           setNewBirthday(e.target.value);
                         }}
@@ -681,6 +707,14 @@ function App(props) {
                       >
                         MINT
                       </Button>
+                      <div style={{ margin: 32 }}>
+                        <a
+                          target="_blank"
+                          href="https://www.esrl.noaa.gov/gmd/grad/neubrew/Calendar.jsp?view=DOY&year=2024&col=4"
+                        >
+                          Day of Year Calender
+                        </a>
+                      </div>
                     </>
                   ) : (
                     <></>
@@ -692,9 +726,63 @@ function App(props) {
                 </Button>
               )}
             </div>
+
+            <div style={{ width: 820, margin: "auto", paddingBottom: 256 }}>
+              {yourBalance === 0 ? (
+                <> </>
+              ) : (
+                <List
+                  bordered
+                  dataSource={yourCollectibles}
+                  renderItem={item => {
+                    const id = item.id.toNumber();
+
+                    console.log("IMAGE", item.image);
+
+                    return (
+                      <List.Item key={uuidv4()}>
+                        <Birthday item={item} id={id} />
+                      </List.Item>
+                    );
+                  }}
+                />
+              )}
+            </div>
+          </Route>
+
+          <Route exact path="/Present">
+            <div style={{ margin: 32 }}>
+              <Input
+                style={{ maxWidth: 300 }}
+                placeholder="Birthday Number"
+                onChange={e => {
+                  setPresent(e.target.value);
+                }}
+              />
+              <Button
+                type={"primary"}
+                onClick={() => {
+                  tx(writeContracts.Birthday.givePresent(present, { value: utils.parseEther("0.05") }));
+                }}
+              >
+                Give 0.05 ETH Present to Birthday Holder
+              </Button>
+
+              <div style={{ margin: 32 }}>
+                <a
+                  target="_blank"
+                  href="https://www.esrl.noaa.gov/gmd/grad/neubrew/Calendar.jsp?view=DOY&year=2024&col=4"
+                >
+                  Day of Year Calender
+                </a>
+              </div>
+            </div>
+          </Route>
+          <Route exact path="/Colors">
             <div style={{ padding: 32 }}>
               <Input
-                style={{ maxWidth: 200 }}
+                style={{ maxWidth: 400 }}
+                placeholder="Input any postive unclaimed token id to mint a test color"
                 onChange={e => {
                   setNewBirthday(e.target.value);
                 }}
@@ -708,39 +796,23 @@ function App(props) {
                 MINT COLOR
               </Button>
             </div>
-            <div style={{ width: 820, margin: "auto", paddingBottom: 256 }}>
-              <List
-                bordered
-                dataSource={yourCollectibles}
-                renderItem={item => {
-                  const id = item.id.toNumber();
-
-                  console.log("IMAGE", item.image);
-
-                  return (
-                    <List.Item key={uuidv4()}>
-                      <Birthday item={item} id={id} />
-                    </List.Item>
-                  );
-                }}
-              />
-            </div>
           </Route>
           <Route path="/debug">
-            <div style={{ padding: 32 }}>
-              <Address
-                value={readContracts && readContracts.YourCollectible && readContracts.YourCollectible.address}
-              />
-            </div>
+            {/* <div style={{ padding: 32 }}>
+              <Address value={readContracts && readContracts.Birthday && readContracts.Birthday.address} />
+            </div> */}
             <Contract
-              name="Colors"
+              name="Birthday"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
+            {/* <div style={{ padding: 32 }}>
+              <Address value={readContracts && readContracts.Colors && readContracts.Colors.address} />
+            </div> */}
             <Contract
-              name="Birthday"
+              name="Colors"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
